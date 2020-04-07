@@ -7,8 +7,18 @@
 //
 
 import CoreData
+import UIKit
 
-open class DataSourceViewModel: NSObject {
+public protocol DataSourceViewModelDelegate: AnyObject {
+    func shouldCallObserver(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
+                            for type: AnyClass) -> Bool
+}
+
+open class DataSourceViewModel<Model: NSManagedObject>: NSObject, NSFetchedResultsControllerDelegate {
+    private let moc: NSManagedObjectContext
+    private let fetchedResultsController: NSFetchedResultsController<Model>
+    public weak var delegate: DataSourceViewModelDelegate?
+    
     public enum Change {
         case insert(indexPath: IndexPath)
         case update(indexPath: IndexPath)
@@ -16,23 +26,45 @@ open class DataSourceViewModel: NSObject {
         case delete(indexPath: IndexPath)
     }
 
-    public typealias Observer = (_ object: Any, _ change: Change) -> Void
+    public typealias Observer = (_ object: Model, _ change: Change) -> Void
     var observer: Observer?
+    
+    public init(context: NSManagedObjectContext, fetchRequest: NSFetchRequest<Model>) {
+        moc = context
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
+                                                              managedObjectContext: moc,
+                                                              sectionNameKeyPath: nil,
+                                                              cacheName: nil)
+        super.init()
 
-    public func observe(observer: @escaping Observer) {
+        fetchedResultsController.delegate = self
+        try! fetchedResultsController.performFetch()
+    }
+
+    public func observe(_ observer: @escaping Observer) {
         self.observer = observer
     }
 
-    open func shouldCallObserver<T: NSFetchRequestResult>(_ controller: NSFetchedResultsController<T>) -> Bool {
-        true
+    public var dataSource: [Model] {
+        fetchedResultsController.fetchedObjects ?? []
     }
-}
 
-// MARK: - NSFetchedResultsControllerDelegate
+    public func object(at indexPath: IndexPath) -> Model {
+        dataSource[indexPath.row]
+    }
 
-extension DataSourceViewModel: NSFetchedResultsControllerDelegate {
+    public func delete(at indexPath: IndexPath) {
+        moc.delete(object(at: indexPath))
+        try! moc.save()
+    }
+    
+    // MARK: - NSFetchedResultsControllerDelegate
+    
     public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        if shouldCallObserver(controller), let observer = observer {
+        if delegate?.shouldCallObserver(controller, for: Model.self) ?? true,
+            let observer = observer,
+            let object = anObject as? Model {
+
             let change: Change
             switch type {
             case .insert:
@@ -47,7 +79,7 @@ extension DataSourceViewModel: NSFetchedResultsControllerDelegate {
                 fatalError("Unhandled case")
             }
 
-            observer(anObject, change)
+            observer(object, change)
         }
     }
 }
