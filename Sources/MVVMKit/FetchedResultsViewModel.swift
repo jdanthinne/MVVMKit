@@ -127,7 +127,7 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
         if let sectionsObserver = sectionsObserver {
             switch type {
             case .insert:
-                sectionsObserver(.insert(indexSet: IndexSet(integer: 0)))
+                sectionsObserver(.insert(indexSet: IndexSet(integer: sectionIndex)))
             case .delete:
                 sectionsObserver(.delete(indexPath: IndexSet(integer: sectionIndex)))
             default:
