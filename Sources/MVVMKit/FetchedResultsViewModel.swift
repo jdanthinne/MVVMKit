@@ -57,6 +57,9 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
         fetchedObjects.isEmpty
     }
     
+    public var numberOfSections: Int {
+        fetchedResultsController.sections!.count
+    }
     func sectionInfo(at section: Int) -> NSFetchedResultsSectionInfo {
         fetchedResultsController.sections![section]
     }
