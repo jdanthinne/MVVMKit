@@ -29,6 +29,10 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     public typealias Observer = (_ object: Model, _ change: Change) -> Void
     var observer: Observer?
     
+    public typealias ChangeObserver = () -> Void
+    var willChangeObserver: ChangeObserver?
+    var didChangeObserver: ChangeObserver?
+    
     public init(context: NSManagedObjectContext,
                 fetchRequest: NSFetchRequest<Model>,
                 sectionNameKeyPath: String? = nil) {
@@ -42,10 +46,22 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
         fetchedResultsController.delegate = self
         try! fetchedResultsController.performFetch()
     }
+    
+    // MARK: - Observers
 
     public func observe(_ observer: @escaping Observer) {
         self.observer = observer
     }
+    
+    public func willChangeObserve(_ observer: @escaping ChangeObserver) {
+        self.willChangeObserver = observer
+    }
+    
+    public func didChangeObserve(_ observer: @escaping ChangeObserver) {
+        self.didChangeObserver = observer
+    }
+    
+    // MARK: - Getters
 
     open var fetchedObjects: [Model] {
         fetchedResultsController.fetchedObjects ?? []
@@ -86,6 +102,14 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     }
     
     // MARK: - NSFetchedResultsControllerDelegate
+    
+    public func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        willChangeObserver?()
+    }
+
+    public func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        didChangeObserver?()
+    }
     
     public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         if delegate?.fetchedResultsViewModel(controller, shouldCallObserverFor: Model.self) ?? true,
