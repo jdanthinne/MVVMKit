@@ -11,10 +11,10 @@ import Foundation
 public final class Observable<T> {
     private var _value: T
 
-    typealias Listener = (T) -> Void
+    public typealias Listener = (T) -> Void
     var listener: Listener?
 
-    var value: T {
+    public var value: T {
         get {
             _value
         }
@@ -24,11 +24,11 @@ public final class Observable<T> {
         }
     }
 
-    init(_ value: T) {
+    public init(_ value: T) {
         _value = value
     }
 
-    func bind(listener: Listener?) {
+    public func bind(listener: Listener?) {
         self.listener = listener
         listener?(_value)
     }

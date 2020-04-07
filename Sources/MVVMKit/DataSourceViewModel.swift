@@ -8,22 +8,22 @@
 
 import CoreData
 
-public class DataSourceViewModel: NSObject {
-    enum Change {
+open class DataSourceViewModel: NSObject {
+    public enum Change {
         case insert(indexPath: IndexPath)
         case update(indexPath: IndexPath)
         case move(sourceIndexPath: IndexPath, destinationIndexPath: IndexPath)
         case delete(indexPath: IndexPath)
     }
 
-    typealias Observer = (_ object: Any, _ change: Change) -> Void
+    public typealias Observer = (_ object: Any, _ change: Change) -> Void
     var observer: Observer?
 
-    func observe(observer: @escaping Observer) {
+    public func observe(observer: @escaping Observer) {
         self.observer = observer
     }
 
-    func shouldCallObserver<T: NSFetchRequestResult>(_ controller: NSFetchedResultsController<T>) -> Bool {
+    open func shouldCallObserver<T: NSFetchRequestResult>(_ controller: NSFetchedResultsController<T>) -> Bool {
         true
     }
 }
@@ -31,7 +31,7 @@ public class DataSourceViewModel: NSObject {
 // MARK: - NSFetchedResultsControllerDelegate
 
 extension DataSourceViewModel: NSFetchedResultsControllerDelegate {
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+    public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         if shouldCallObserver(controller), let observer = observer {
             let change: Change
             switch type {

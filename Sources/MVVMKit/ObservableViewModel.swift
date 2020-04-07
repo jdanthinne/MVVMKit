@@ -13,31 +13,33 @@ public protocol ViewModelObserver: AnyObject {
     func viewModelDidChange()
 }
 
-extension ViewModelObserver {
+public extension ViewModelObserver {
     func viewModelWillChange() {}
     func viewModelDidChange() {}
 }
 
-public class ObservableViewModel {
+open class ObservableViewModel {
     struct Observation {
         weak var observer: ViewModelObserver?
     }
+    
+    public init() {}
 
     var observations = [ObjectIdentifier: Observation]()
 
-    func addObserver(_ observer: ViewModelObserver) {
+    public func addObserver(_ observer: ViewModelObserver) {
         let id = ObjectIdentifier(observer)
         observations[id] = Observation(observer: observer)
 
         observer.viewModelDidChange()
     }
 
-    func removeObserver(_ observer: ViewModelObserver) {
+    public func removeObserver(_ observer: ViewModelObserver) {
         let id = ObjectIdentifier(observer)
         observations.removeValue(forKey: id)
     }
 
-    func modelDidChange() {
+    public func modelDidChange() {
         for (id, observation) in observations {
             guard let observer = observation.observer else {
                 observations.removeValue(forKey: id)
@@ -48,7 +50,7 @@ public class ObservableViewModel {
         }
     }
 
-    func modelWillChange() {
+    public func modelWillChange() {
         for (id, observation) in observations {
             guard let observer = observation.observer else {
                 observations.removeValue(forKey: id)
