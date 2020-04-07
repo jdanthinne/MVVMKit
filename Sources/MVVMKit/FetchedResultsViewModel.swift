@@ -25,9 +25,17 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
         case move(sourceIndexPath: IndexPath, destinationIndexPath: IndexPath)
         case delete(indexPath: IndexPath)
     }
+    
+    public enum SectionChange {
+        case insert(indexSet: IndexSet)
+        case delete(indexPath: IndexSet)
+    }
 
     public typealias Observer = (_ object: Model, _ change: Change) -> Void
     var observer: Observer?
+    
+    public typealias SectionsObserver = (_ change: SectionChange) -> Void
+    var sectionsObserver: SectionsObserver?
     
     public typealias ChangeObserver = () -> Void
     var willChangeObserver: ChangeObserver?
@@ -51,6 +59,10 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
 
     public func observe(_ observer: @escaping Observer) {
         self.observer = observer
+    }
+    
+    public func sectionsObserve(_ observer: @escaping SectionsObserver) {
+        self.sectionsObserver = observer
     }
     
     public func willChangeObserve(_ observer: @escaping ChangeObserver) {
@@ -109,6 +121,19 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
 
     public func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         didChangeObserver?()
+    }
+    
+    public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
+        if let sectionsObserver = sectionsObserver {
+            switch type {
+            case .insert:
+                sectionsObserver(.insert(indexSet: IndexSet(integer: 0)))
+            case .delete:
+                sectionsObserver(.delete(indexPath: IndexSet(integer: sectionIndex)))
+            default:
+                break
+            }
+        }
     }
     
     public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
