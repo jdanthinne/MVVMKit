@@ -9,15 +9,15 @@
 import CoreData
 import UIKit
 
-public protocol DataSourceViewModelDelegate: AnyObject {
-    func shouldCallObserver(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
-                            for type: AnyClass) -> Bool
+public protocol FetchedResultsViewModelDelegate: AnyObject {
+    func fetchedResultsViewModel(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
+                                 shouldCallObserverFor type: AnyClass) -> Bool
 }
 
-open class DataSourceViewModel<Model: NSManagedObject>: NSObject, NSFetchedResultsControllerDelegate {
+open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedResultsControllerDelegate {
     private let moc: NSManagedObjectContext
     private let fetchedResultsController: NSFetchedResultsController<Model>
-    public weak var delegate: DataSourceViewModelDelegate?
+    public weak var delegate: FetchedResultsViewModelDelegate?
     
     public enum Change {
         case insert(indexPath: IndexPath)
@@ -29,11 +29,13 @@ open class DataSourceViewModel<Model: NSManagedObject>: NSObject, NSFetchedResul
     public typealias Observer = (_ object: Model, _ change: Change) -> Void
     var observer: Observer?
     
-    public init(context: NSManagedObjectContext, fetchRequest: NSFetchRequest<Model>) {
+    public init(context: NSManagedObjectContext,
+                fetchRequest: NSFetchRequest<Model>,
+                sectionNameKeyPath: String? = nil) {
         moc = context
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                               managedObjectContext: moc,
-                                                              sectionNameKeyPath: nil,
+                                                              sectionNameKeyPath: sectionNameKeyPath,
                                                               cacheName: nil)
         super.init()
 
@@ -45,12 +47,31 @@ open class DataSourceViewModel<Model: NSManagedObject>: NSObject, NSFetchedResul
         self.observer = observer
     }
 
-    public var dataSource: [Model] {
+    var fetchedObjects: [Model] {
         fetchedResultsController.fetchedObjects ?? []
+    }
+    public var numberOfObjects: Int {
+        fetchedObjects.count
+    }
+    public var isEmpty: Bool {
+        fetchedObjects.isEmpty
+    }
+    
+    func sectionInfo(at section: Int) -> NSFetchedResultsSectionInfo {
+        fetchedResultsController.sections![section]
+    }
+    func titleOfSection(at section: Int) -> String? {
+        sectionInfo(at: section).indexTitle
+    }
+    func objects(in section: Int) -> [Model] {
+        sectionInfo(at: section).objects as! [Model]
+    }
+    public func numberOfObjects(in section: Int) -> Int {
+        objects(in: section).count
     }
 
     public func object(at indexPath: IndexPath) -> Model {
-        dataSource[indexPath.row]
+        objects(in: indexPath.section)[indexPath.row]
     }
 
     public func delete(at indexPath: IndexPath) {
@@ -61,7 +82,7 @@ open class DataSourceViewModel<Model: NSManagedObject>: NSObject, NSFetchedResul
     // MARK: - NSFetchedResultsControllerDelegate
     
     public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        if delegate?.shouldCallObserver(controller, for: Model.self) ?? true,
+        if delegate?.fetchedResultsViewModel(controller, shouldCallObserverFor: Model.self) ?? true,
             let observer = observer,
             let object = anObject as? Model {
 
