@@ -63,8 +63,11 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     func sectionInfo(at section: Int) -> NSFetchedResultsSectionInfo {
         fetchedResultsController.sections![section]
     }
+    public var sectionsTitles: [String] {
+        fetchedResultsController.sections!.map(\.name)
+    }
     public func titleOfSection(at section: Int) -> String? {
-        sectionInfo(at: section).indexTitle
+        sectionInfo(at: section).name
     }
     func objects(in section: Int) -> [Model] {
         sectionInfo(at: section).objects as! [Model]
