@@ -47,7 +47,7 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
         self.observer = observer
     }
 
-    public var fetchedObjects: [Model] {
+    open var fetchedObjects: [Model] {
         fetchedResultsController.fetchedObjects ?? []
     }
     public var numberOfObjects: Int {
