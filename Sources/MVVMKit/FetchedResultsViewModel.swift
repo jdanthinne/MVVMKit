@@ -15,7 +15,7 @@ public protocol FetchedResultsViewModelDelegate: AnyObject {
 }
 
 open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedResultsControllerDelegate {
-    private let moc: NSManagedObjectContext
+    internal let moc: NSManagedObjectContext
     private let fetchedResultsController: NSFetchedResultsController<Model>
     public weak var delegate: FetchedResultsViewModelDelegate?
     
