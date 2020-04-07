@@ -47,7 +47,7 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
         self.observer = observer
     }
 
-    var fetchedObjects: [Model] {
+    public var fetchedObjects: [Model] {
         fetchedResultsController.fetchedObjects ?? []
     }
     public var numberOfObjects: Int {
@@ -60,7 +60,7 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     func sectionInfo(at section: Int) -> NSFetchedResultsSectionInfo {
         fetchedResultsController.sections![section]
     }
-    func titleOfSection(at section: Int) -> String? {
+    public func titleOfSection(at section: Int) -> String? {
         sectionInfo(at: section).indexTitle
     }
     func objects(in section: Int) -> [Model] {
