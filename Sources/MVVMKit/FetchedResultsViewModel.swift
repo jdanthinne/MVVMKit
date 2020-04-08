@@ -9,6 +9,18 @@
 import CoreData
 import UIKit
 
+public enum FetchedResultsChange {
+    case insert(indexPath: IndexPath)
+    case update(indexPath: IndexPath)
+    case move(sourceIndexPath: IndexPath, destinationIndexPath: IndexPath)
+    case delete(indexPath: IndexPath)
+}
+   
+public enum FetchedResultsSectionChange {
+    case insert(indexSet: IndexSet)
+    case delete(indexPath: IndexSet)
+}
+
 public protocol FetchedResultsViewModelDelegate: AnyObject {
     func fetchedResultsViewModel(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
                                  shouldCallObserverFor type: AnyClass) -> Bool
@@ -18,23 +30,11 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     open var moc: NSManagedObjectContext
     private let fetchedResultsController: NSFetchedResultsController<Model>
     public weak var delegate: FetchedResultsViewModelDelegate?
-    
-    public enum Change {
-        case insert(indexPath: IndexPath)
-        case update(indexPath: IndexPath)
-        case move(sourceIndexPath: IndexPath, destinationIndexPath: IndexPath)
-        case delete(indexPath: IndexPath)
-    }
-    
-    public enum SectionChange {
-        case insert(indexSet: IndexSet)
-        case delete(indexPath: IndexSet)
-    }
 
-    public typealias Observer = (_ object: Model, _ change: Change) -> Void
+    public typealias Observer = (_ object: Model, _ change: FetchedResultsChange) -> Void
     var observer: Observer?
     
-    public typealias SectionsObserver = (_ change: SectionChange) -> Void
+    public typealias SectionsObserver = (_ change: FetchedResultsSectionChange) -> Void
     var sectionsObserver: SectionsObserver?
     
     public typealias ChangeObserver = () -> Void
@@ -141,7 +141,7 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
             let observer = observer,
             let object = anObject as? Model {
 
-            let change: Change
+            let change: FetchedResultsChange
             switch type {
             case .insert:
                 change = .insert(indexPath: newIndexPath!)
