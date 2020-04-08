@@ -15,7 +15,7 @@ public enum FetchedResultsChange {
     case move(sourceIndexPath: IndexPath, destinationIndexPath: IndexPath)
     case delete(indexPath: IndexPath)
 }
-   
+
 public enum FetchedResultsSectionChange {
     case insert(indexSet: IndexSet)
     case delete(indexPath: IndexSet)
@@ -33,14 +33,14 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
 
     public typealias Observer = (_ object: Model, _ change: FetchedResultsChange) -> Void
     var observer: Observer?
-    
+
     public typealias SectionsObserver = (_ change: FetchedResultsSectionChange) -> Void
     var sectionsObserver: SectionsObserver?
-    
+
     public typealias ChangeObserver = () -> Void
     var willChangeObserver: ChangeObserver?
     var didChangeObserver: ChangeObserver?
-    
+
     public init(context: NSManagedObjectContext,
                 fetchRequest: NSFetchRequest<Model>,
                 sectionNameKeyPath: String? = nil) {
@@ -54,52 +54,59 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
         fetchedResultsController.delegate = self
         try! fetchedResultsController.performFetch()
     }
-    
+
     // MARK: - Observers
 
     public func observe(_ observer: @escaping Observer) {
         self.observer = observer
     }
-    
+
     public func sectionsObserve(_ observer: @escaping SectionsObserver) {
-        self.sectionsObserver = observer
+        sectionsObserver = observer
     }
-    
+
     public func willChangeObserve(_ observer: @escaping ChangeObserver) {
-        self.willChangeObserver = observer
+        willChangeObserver = observer
     }
-    
+
     public func didChangeObserve(_ observer: @escaping ChangeObserver) {
-        self.didChangeObserver = observer
+        didChangeObserver = observer
     }
-    
+
     // MARK: - Getters
 
     open var fetchedObjects: [Model] {
         fetchedResultsController.fetchedObjects ?? []
     }
+
     public var numberOfObjects: Int {
         fetchedObjects.count
     }
+
     public var isEmpty: Bool {
         fetchedObjects.isEmpty
     }
-    
+
     public var numberOfSections: Int {
         fetchedResultsController.sections!.count
     }
+
     func sectionInfo(at section: Int) -> NSFetchedResultsSectionInfo {
         fetchedResultsController.sections![section]
     }
+
     public var sectionsTitles: [String] {
         fetchedResultsController.sections!.map(\.name)
     }
+
     public func titleOfSection(at section: Int) -> String? {
         sectionInfo(at: section).name
     }
+
     func objects(in section: Int) -> [Model] {
         sectionInfo(at: section).objects as! [Model]
     }
+
     public func numberOfObjects(in section: Int) -> Int {
         objects(in: section).count
     }
@@ -112,9 +119,9 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
         moc.delete(object(at: indexPath))
         try! moc.save()
     }
-    
+
     // MARK: - NSFetchedResultsControllerDelegate
-    
+
     public func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         willChangeObserver?()
     }
@@ -122,7 +129,7 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     public func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         didChangeObserver?()
     }
-    
+
     public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
         if let sectionsObserver = sectionsObserver {
             switch type {
@@ -135,12 +142,11 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
             }
         }
     }
-    
+
     public func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         if delegate?.fetchedResultsViewModel(controller, shouldCallObserverFor: Model.self) ?? true,
             let observer = observer,
             let object = anObject as? Model {
-
             let change: FetchedResultsChange
             switch type {
             case .insert:

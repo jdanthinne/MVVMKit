@@ -22,7 +22,7 @@ open class ObservableViewModel {
     struct Observation {
         weak var observer: ViewModelObserver?
     }
-    
+
     public init() {}
 
     var observations = [ObjectIdentifier: Observation]()

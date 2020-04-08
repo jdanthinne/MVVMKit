@@ -1,5 +1,5 @@
-import XCTest
 @testable import MVVMKit
+import XCTest
 
 final class MVVMKitTests: XCTestCase {
     func testExample() {
