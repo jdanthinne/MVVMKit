@@ -12,7 +12,7 @@ public final class Observable<T: Equatable> {
     private var _value: T
 
     public typealias Listener = (T) -> Void
-    var listener: Listener?
+    var listeners = [UUID: Listener?]()
 
     public var value: T {
         get {
@@ -21,7 +21,14 @@ public final class Observable<T: Equatable> {
         set {
             if newValue != _value {
                 _value = newValue
-                listener?(_value)
+                for (token, listener) in listeners {
+                    guard let listener = listener else {
+                        listeners.removeValue(forKey: token)
+                        continue
+                    }
+
+                    listener(_value)
+                }
             }
         }
     }
@@ -31,7 +38,8 @@ public final class Observable<T: Equatable> {
     }
 
     public func bind(listener: Listener?) {
-        self.listener = listener
+        let token = UUID()
+        listeners[token] = listener
         listener?(_value)
     }
 }
