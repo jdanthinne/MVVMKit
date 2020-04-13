@@ -8,7 +8,7 @@
 
 import Foundation
 
-public final class Observable<T> {
+public final class Observable<T: Equatable> {
     private var _value: T
 
     public typealias Listener = (T) -> Void
@@ -19,8 +19,10 @@ public final class Observable<T> {
             _value
         }
         set {
-            _value = newValue
-            listener?(_value)
+            if newValue != _value {
+                _value = newValue
+                listener?(_value)
+            }
         }
     }
 
