@@ -37,13 +37,13 @@ public final class Observable<T: Equatable> {
         _value = value
     }
 
-    public func bind(listener: Listener?) -> UUID {
+    public func bind(listener: Listener?) -> ObservationToken {
         let token = UUID()
         listeners[token] = listener
         listener?(_value)
-    }
-    
-    public removeBinding(_ token: UUID) {
-        listeners.removeValue(forKey: token)
+        
+        return ObservationToken { [weak self] in
+            self?.listeners.removeValue(forKey: token)
+        }
     }
 }
