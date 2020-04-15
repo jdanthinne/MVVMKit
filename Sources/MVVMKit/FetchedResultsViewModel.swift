@@ -73,6 +73,13 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
         didChangeObserver = observer
     }
 
+    public func cancelObservers() {
+        observer = nil
+        sectionsObserver = nil
+        willChangeObserver = nil
+        didChangeObserver = nil
+    }
+
     // MARK: - Getters
 
     open var fetchedObjects: [Model] {
