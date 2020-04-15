@@ -41,7 +41,7 @@ public final class Observable<T: Equatable> {
         let token = UUID()
         listeners[token] = listener
         listener?(_value)
-        
+
         return ObservationToken { [weak self] in
             self?.listeners.removeValue(forKey: token)
         }
