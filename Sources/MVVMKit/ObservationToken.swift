@@ -14,7 +14,7 @@ public final class ObservationToken {
         self.cancellationClosure = cancellationClosure
     }
 
-    func cancel() {
+    public func cancel() {
         cancellationClosure()
     }
 }
