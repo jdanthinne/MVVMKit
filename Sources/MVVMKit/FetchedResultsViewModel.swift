@@ -27,7 +27,8 @@ public protocol FetchedResultsViewModelDelegate: AnyObject {
 }
 
 open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedResultsControllerDelegate {
-    open var moc: NSManagedObjectContext
+    open var viewContext: NSManagedObjectContext
+    open var backgroundContext: NSManagedObjectContext
     private let fetchedResultsController: NSFetchedResultsController<Model>
     public weak var delegate: FetchedResultsViewModelDelegate?
 
@@ -41,12 +42,14 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     var willChangeObserver: ChangeObserver?
     var didChangeObserver: ChangeObserver?
 
-    public init(context: NSManagedObjectContext,
+    public init(viewContext: NSManagedObjectContext,
+                backgroundContext: NSManagedObjectContext,
                 fetchRequest: NSFetchRequest<Model>,
                 sectionNameKeyPath: String? = nil) {
-        moc = context
+        self.viewContext = viewContext
+        self.backgroundContext = backgroundContext
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
-                                                              managedObjectContext: moc,
+                                                              managedObjectContext: viewContext,
                                                               sectionNameKeyPath: sectionNameKeyPath,
                                                               cacheName: nil)
         super.init()
@@ -123,8 +126,8 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     }
 
     public func delete(at indexPath: IndexPath) {
-        moc.delete(object(at: indexPath))
-        try! moc.save()
+        viewContext.delete(object(at: indexPath))
+        try! viewContext.save()
     }
 
     // MARK: - NSFetchedResultsControllerDelegate
