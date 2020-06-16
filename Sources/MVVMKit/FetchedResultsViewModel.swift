@@ -164,7 +164,11 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
             case .delete:
                 change = .delete(indexPath: indexPath!)
             case .move:
-                change = .move(sourceIndexPath: indexPath!, destinationIndexPath: newIndexPath!)
+                if indexPath == newIndexPath {
+                    change = .update(indexPath: indexPath!)
+                } else {
+                    change = .move(sourceIndexPath: indexPath!, destinationIndexPath: newIndexPath!)
+                }
             case .update:
                 change = .update(indexPath: indexPath!)
             @unknown default:
