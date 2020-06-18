@@ -126,8 +126,12 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     }
 
     public func delete(at indexPath: IndexPath) {
-        viewContext.delete(object(at: indexPath))
-        try! viewContext.save()
+        let objectID = object(at: indexPath).objectID
+        backgroundContext.perform {
+            let objectToDelete = self.backgroundContext.object(with: objectID)
+            self.backgroundContext.delete(objectToDelete)
+            try! self.backgroundContext.save()
+        }
     }
 
     // MARK: - NSFetchedResultsControllerDelegate
