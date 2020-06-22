@@ -28,7 +28,6 @@ public protocol FetchedResultsViewModelDelegate: AnyObject {
 
 open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedResultsControllerDelegate {
     open var viewContext: NSManagedObjectContext
-    open var backgroundContext: NSManagedObjectContext
     private let fetchedResultsController: NSFetchedResultsController<Model>
     public weak var delegate: FetchedResultsViewModelDelegate?
 
@@ -43,11 +42,9 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     var didChangeObserver: ChangeObserver?
 
     public init(viewContext: NSManagedObjectContext,
-                backgroundContext: NSManagedObjectContext,
                 fetchRequest: NSFetchRequest<Model>,
                 sectionNameKeyPath: String? = nil) {
         self.viewContext = viewContext
-        self.backgroundContext = backgroundContext
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                               managedObjectContext: viewContext,
                                                               sectionNameKeyPath: sectionNameKeyPath,
@@ -126,12 +123,8 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     }
 
     public func delete(at indexPath: IndexPath) {
-        let objectID = object(at: indexPath).objectID
-        backgroundContext.perform {
-            let objectToDelete = self.backgroundContext.object(with: objectID)
-            self.backgroundContext.delete(objectToDelete)
-            try! self.backgroundContext.save()
-        }
+        viewContext.delete(object(at: indexPath))
+        try! viewContext.save()
     }
 
     // MARK: - NSFetchedResultsControllerDelegate
