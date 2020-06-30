@@ -43,7 +43,7 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
 
     public init(viewContext: NSManagedObjectContext,
                 fetchRequest: NSFetchRequest<Model>,
-                sectionNameKeyPath: String? = nil) {
+                sectionNameKeyPath: String? = nil) throws {
         self.viewContext = viewContext
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                               managedObjectContext: viewContext,
@@ -52,7 +52,7 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
         super.init()
 
         fetchedResultsController.delegate = self
-        try! fetchedResultsController.performFetch()
+        try fetchedResultsController.performFetch()
     }
 
     // MARK: - Observers
@@ -122,9 +122,9 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
         objects(in: indexPath.section)[indexPath.row]
     }
 
-    public func delete(at indexPath: IndexPath) {
+    public func delete(at indexPath: IndexPath) throws {
         viewContext.delete(object(at: indexPath))
-        try! viewContext.save()
+        try viewContext.save()
     }
 
     // MARK: - NSFetchedResultsControllerDelegate
