@@ -16,7 +16,7 @@ public protocol FetchedResultsViewModelDelegate: AnyObject {
 
 open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedResultsControllerDelegate {
     public let viewContext: NSManagedObjectContext
-    private let fetchedResultsController: NSFetchedResultsController<Model>
+    private let fetchedResultsController: RichFetchedResultsController<Model>
     public weak var delegate: FetchedResultsViewModelDelegate?
 
     public typealias ChangeObserver = (_ objects: [Model]) -> Void
@@ -25,14 +25,19 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     public var objects: [Model]
 
     public init(viewContext: NSManagedObjectContext,
-                fetchRequest: NSFetchRequest<Model>) throws {
+                fetchRequest: NSFetchRequest<Model>,
+                relationshipKeyPathsForRefreshing: Set<String> = []) throws {
         self.viewContext = viewContext
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
-                                                              managedObjectContext: viewContext,
-                                                              sectionNameKeyPath: nil,
-                                                              cacheName: nil)
+
+        let richRequest = RichFetchRequest<Model>(fetchRequest,
+                                                  relationshipKeyPathsForRefreshing: relationshipKeyPathsForRefreshing)
+
+        fetchedResultsController = RichFetchedResultsController(fetchRequest: richRequest,
+                                                                managedObjectContext: viewContext,
+                                                                sectionNameKeyPath: nil,
+                                                                cacheName: nil)
         try fetchedResultsController.performFetch()
-        objects = fetchedResultsController.fetchedObjects ?? []
+        objects = fetchedResultsController.fetchedObjects as? [Model] ?? []
 
         super.init()
         fetchedResultsController.delegate = self

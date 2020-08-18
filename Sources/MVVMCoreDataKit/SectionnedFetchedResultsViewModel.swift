@@ -26,17 +26,8 @@ open class SectionnedFetchedResultsViewModel<Model: NSManagedObject>: NSObject, 
                 relationshipKeyPathsForRefreshing: Set<String> = []) throws {
         self.viewContext = viewContext
 
-        let richRequest = RichFetchRequest<Model>(entityName: fetchRequest.entityName!)
-        richRequest.predicate = fetchRequest.predicate
-        richRequest.sortDescriptors = fetchRequest.sortDescriptors
-
-        richRequest.fetchBatchSize = fetchRequest.fetchBatchSize
-        richRequest.fetchLimit = fetchRequest.fetchLimit
-        richRequest.fetchOffset = fetchRequest.fetchOffset
-        richRequest.propertiesToFetch = fetchRequest.propertiesToFetch
-        richRequest.propertiesToGroupBy = fetchRequest.propertiesToGroupBy
-
-        richRequest.relationshipKeyPathsForRefreshing = relationshipKeyPathsForRefreshing
+        let richRequest = RichFetchRequest<Model>(fetchRequest,
+                                                  relationshipKeyPathsForRefreshing: relationshipKeyPathsForRefreshing)
 
         fetchedResultsController = RichFetchedResultsController(fetchRequest: richRequest,
                                                                 managedObjectContext: viewContext,
