@@ -11,7 +11,7 @@ import UIKit
 
 open class SectionnedFetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedResultsControllerDelegate {
     public let viewContext: NSManagedObjectContext
-    private let fetchedResultsController: NSFetchedResultsController<Model>
+    private let fetchedResultsController: RichFetchedResultsController<Model>
     public weak var delegate: FetchedResultsViewModelDelegate?
 
     public typealias ChangeObserver = (_ objects: [ModelSection]) -> Void
@@ -22,12 +22,26 @@ open class SectionnedFetchedResultsViewModel<Model: NSManagedObject>: NSObject, 
 
     public init(viewContext: NSManagedObjectContext,
                 fetchRequest: NSFetchRequest<Model>,
-                sectionNameKeyPath: String) throws {
+                sectionNameKeyPath: String,
+                relationshipKeyPathsForRefreshing: Set<String> = []) throws {
         self.viewContext = viewContext
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
-                                                              managedObjectContext: viewContext,
-                                                              sectionNameKeyPath: sectionNameKeyPath,
-                                                              cacheName: nil)
+
+        let richRequest = RichFetchRequest<Model>(entityName: fetchRequest.entityName!)
+        richRequest.predicate = fetchRequest.predicate
+        richRequest.sortDescriptors = fetchRequest.sortDescriptors
+
+        richRequest.fetchBatchSize = fetchRequest.fetchBatchSize
+        richRequest.fetchLimit = fetchRequest.fetchLimit
+        richRequest.fetchOffset = fetchRequest.fetchOffset
+        richRequest.propertiesToFetch = fetchRequest.propertiesToFetch
+        richRequest.propertiesToGroupBy = fetchRequest.propertiesToGroupBy
+
+        richRequest.relationshipKeyPathsForRefreshing = relationshipKeyPathsForRefreshing
+
+        fetchedResultsController = RichFetchedResultsController(fetchRequest: richRequest,
+                                                                managedObjectContext: viewContext,
+                                                                sectionNameKeyPath: sectionNameKeyPath,
+                                                                cacheName: nil)
 
         super.init()
 
