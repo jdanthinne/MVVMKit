@@ -8,13 +8,13 @@
 import CoreData
 
 /// Observes relationship key paths and refreshes Core Data objects accordingly once the related managed object context saves.
-public final class RelationshipKeyPathsObserver<ResultType: NSFetchRequestResult>: NSObject {
+final class RelationshipKeyPathsObserver<ResultType: NSFetchRequestResult>: NSObject {
     private let keyPaths: Set<RelationshipKeyPath>
     private unowned let fetchedResultsController: RichFetchedResultsController<ResultType>
 
     private var updatedObjectIDs: Set<NSManagedObjectID> = []
 
-    public init?(keyPaths: Set<String>, fetchedResultsController: RichFetchedResultsController<ResultType>) {
+    init?(keyPaths: Set<String>, fetchedResultsController: RichFetchedResultsController<ResultType>) {
         guard !keyPaths.isEmpty else { return nil }
 
         let relationships = fetchedResultsController.fetchRequest.entity!.relationshipsByName

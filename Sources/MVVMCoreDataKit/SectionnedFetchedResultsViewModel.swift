@@ -26,8 +26,8 @@ open class SectionnedFetchedResultsViewModel<Model: NSManagedObject>: NSObject, 
                 relationshipKeyPathsForRefreshing: Set<String> = []) throws {
         self.viewContext = viewContext
 
-        let richRequest = RichFetchRequest<Model>(fetchRequest,
-                                                  relationshipKeyPathsForRefreshing: relationshipKeyPathsForRefreshing)
+        let richRequest = RichFetchRequest<Model>.from(fetchRequest,
+                                                       relationshipKeyPathsForRefreshing: relationshipKeyPathsForRefreshing)
 
         fetchedResultsController = RichFetchedResultsController(fetchRequest: richRequest,
                                                                 managedObjectContext: viewContext,

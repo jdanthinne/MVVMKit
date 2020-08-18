@@ -8,7 +8,7 @@
 import CoreData
 
 /// Describes a relationship key path for a Core Data entity.
-public struct RelationshipKeyPath: Hashable {
+struct RelationshipKeyPath: Hashable {
     /// The source property name of the relationship entity we're observing.
     let sourcePropertyName: String
 
@@ -20,7 +20,7 @@ public struct RelationshipKeyPath: Hashable {
     /// The inverse property name of this relationship. Can be used to get the affected object IDs.
     let inverseRelationshipKeyPath: String
 
-    public init(keyPath: String, relationships: [String: NSRelationshipDescription]) {
+    init(keyPath: String, relationships: [String: NSRelationshipDescription]) {
         let splittedKeyPath = keyPath.split(separator: ".")
         sourcePropertyName = String(splittedKeyPath.first!)
         destinationPropertyName = String(splittedKeyPath.last!)
