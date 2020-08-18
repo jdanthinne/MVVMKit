@@ -15,25 +15,27 @@ public protocol FetchedResultsViewModelDelegate: AnyObject {
 }
 
 open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedResultsControllerDelegate {
-    open var viewContext: NSManagedObjectContext
+    public let viewContext: NSManagedObjectContext
     private let fetchedResultsController: NSFetchedResultsController<Model>
     public weak var delegate: FetchedResultsViewModelDelegate?
 
-    public typealias ChangeObserver = () -> Void
-    var observer: ChangeObserver?
+    public typealias ChangeObserver = (_ objects: [Model]) -> Void
+    private var observer: ChangeObserver?
+
+    public var objects: [Model]
 
     public init(viewContext: NSManagedObjectContext,
-                fetchRequest: NSFetchRequest<Model>,
-                sectionNameKeyPath: String? = nil) throws {
+                fetchRequest: NSFetchRequest<Model>) throws {
         self.viewContext = viewContext
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                               managedObjectContext: viewContext,
-                                                              sectionNameKeyPath: sectionNameKeyPath,
+                                                              sectionNameKeyPath: nil,
                                                               cacheName: nil)
-        super.init()
-
-        fetchedResultsController.delegate = self
         try fetchedResultsController.performFetch()
+        objects = fetchedResultsController.fetchedObjects ?? []
+
+        super.init()
+        fetchedResultsController.delegate = self
     }
 
     // MARK: - Observers
@@ -48,56 +50,34 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
 
     // MARK: - Getters
 
-    open var fetchedObjects: [Model] {
-        fetchedResultsController.fetchedObjects ?? []
-    }
-
     public var numberOfObjects: Int {
-        fetchedObjects.count
+        objects.count
     }
 
     public var isEmpty: Bool {
-        fetchedObjects.isEmpty
+        objects.isEmpty
     }
 
-    public var numberOfSections: Int {
-        fetchedResultsController.sections!.count
-    }
+    public func object(at indexPath: IndexPath) throws -> Model {
+        guard indexPath.row < numberOfObjects else {
+            throw FetchedResultViewModelError.noObjectAtIndexPath
+        }
 
-    func sectionInfo(at section: Int) -> NSFetchedResultsSectionInfo {
-        fetchedResultsController.sections![section]
-    }
-
-    public var sectionsTitles: [String] {
-        fetchedResultsController.sections!.map(\.name)
-    }
-
-    public func titleOfSection(at section: Int) -> String? {
-        sectionInfo(at: section).name
-    }
-
-    func objects(in section: Int) -> [Model] {
-        sectionInfo(at: section).objects as! [Model]
-    }
-
-    public func numberOfObjects(in section: Int) -> Int {
-        objects(in: section).count
-    }
-
-    public func object(at indexPath: IndexPath) -> Model {
-        objects(in: indexPath.section)[indexPath.row]
+        return objects[indexPath.row]
     }
 
     public func delete(at indexPath: IndexPath) throws {
-        viewContext.delete(object(at: indexPath))
+        try viewContext.delete(object(at: indexPath))
         try viewContext.save()
     }
 
     // MARK: - NSFetchedResultsControllerDelegate
 
     public func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        objects = controller.fetchedObjects as? [Model] ?? []
+
         if delegate?.fetchedResultsViewModel(controller, shouldCallObserverFor: Model.self) ?? true {
-            observer?()
+            observer?(objects)
         }
     }
 }
