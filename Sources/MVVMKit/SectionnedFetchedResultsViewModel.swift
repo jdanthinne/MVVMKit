@@ -49,6 +49,7 @@ open class SectionnedFetchedResultsViewModel<Model: NSManagedObject>: NSObject, 
 
     public func observe(_ observer: @escaping ChangeObserver) {
         self.observer = observer
+        observer(sections)
     }
 
     public func cancelObservers() {
