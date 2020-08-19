@@ -22,7 +22,7 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
     public typealias ChangeObserver = (_ objects: [Model]) -> Void
     private var observer: ChangeObserver?
 
-    public var objects: [Model]
+    public var objects = [Model]()
 
     public init(viewContext: NSManagedObjectContext,
                 fetchRequest: NSFetchRequest<Model>,
@@ -36,11 +36,12 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
                                                                 managedObjectContext: viewContext,
                                                                 sectionNameKeyPath: nil,
                                                                 cacheName: nil)
-        try fetchedResultsController.performFetch()
-        objects = fetchedResultsController.fetchedObjects as? [Model] ?? []
 
         super.init()
+
         fetchedResultsController.delegate = self
+        try fetchedResultsController.performFetch()
+        objects = fetchedResultsController.fetchedObjects as? [Model] ?? []
     }
 
     // MARK: - Observers
