@@ -54,7 +54,9 @@ open class SectionnedFetchedResultsViewModel<Model: NSManagedObject>: NSObject, 
 
     public func observe(_ observer: @escaping ChangeObserver) {
         self.observer = observer
-        observer(sections)
+        if delegate?.fetchedResultsViewModel(fetchedResultsController, shouldCallObserverFor: Model.self) ?? true {
+            observer(sections)
+        }
     }
 
     public func cancelObservers() {

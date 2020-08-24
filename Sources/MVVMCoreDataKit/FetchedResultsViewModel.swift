@@ -48,7 +48,9 @@ open class FetchedResultsViewModel<Model: NSManagedObject>: NSObject, NSFetchedR
 
     public func observe(_ observer: @escaping ChangeObserver) {
         self.observer = observer
-        observer(objects)
+        if delegate?.fetchedResultsViewModel(fetchedResultsController, shouldCallObserverFor: Model.self) ?? true {
+            observer(objects)
+        }
     }
 
     public func cancelObservers() {
