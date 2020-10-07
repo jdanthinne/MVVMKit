@@ -8,11 +8,11 @@
 import CoreData
 
 /// An enhanced `NSFetchRequest` that has extra functionality.
-final class RichFetchRequest<ResultType>: NSFetchRequest<NSFetchRequestResult> where ResultType: NSFetchRequestResult {
+public final class RichFetchRequest<ResultType>: NSFetchRequest<NSFetchRequestResult> where ResultType: NSFetchRequestResult {
     /// A set of relationship key paths to observe when using a `RichFetchedResultsController`.
     var relationshipKeyPathsForRefreshing: Set<String> = []
 
-    static func from(_ fetchRequest: NSFetchRequest<ResultType>, relationshipKeyPathsForRefreshing: Set<String>) -> RichFetchRequest<ResultType> {
+    public static func from(_ fetchRequest: NSFetchRequest<ResultType>, relationshipKeyPathsForRefreshing: Set<String>) -> RichFetchRequest<ResultType> {
         let richRequest = RichFetchRequest<ResultType>(entityName: fetchRequest.entityName!)
 
         richRequest.predicate = fetchRequest.predicate
